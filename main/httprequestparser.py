@@ -36,7 +36,7 @@ def parseRequest(request) :
             headers = None
             return [request_method, request_uri, protocol, headers, request_body]
         
-        headers[header.split(':')[0].lower()] = header.split(':')[1].strip()
+        headers[header.split(':', 1)[0].lower()] = header.split(':', 1)[1].strip()
 
     return [request_method, request_uri, protocol, headers, request_body]
 

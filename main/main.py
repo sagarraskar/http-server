@@ -12,14 +12,16 @@ def threaded(c, addr):
            
         [request_method, request_uri, protocol, headers, request_data] = parseRequest(request)
 
-        connection = False
+        # for header in headers:
+        #     print(header)
+        connection = True
         
         if "connection" in headers:
-            if headers["connection"].lower() == "keep-alive":
-                connection = True
+            if headers["connection"] == "close":
+                connection = False
+                
 
-
-        response = generateResponse(request_method, request_uri, protocol, headers, request_data)
+        response = generateResponse(addr, request_method, request_uri, protocol, headers, request_data)
 
         c.send(response)
 
