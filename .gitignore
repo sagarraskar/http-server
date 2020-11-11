@@ -1,1 +1,4 @@
 *.pyc
+http_server.egg-info
+venv
+.vscode
