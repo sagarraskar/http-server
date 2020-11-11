@@ -12,33 +12,35 @@ def parseRequest(request) :
     data=None
 
     
-
-    fullrequest = request.split('\r\n\r\n')
+    fullrequest = request.split(b'\r\n\r\n')
     request_header = fullrequest[0]
   
     if len(fullrequest) == 2:
         request_body = fullrequest[1]
     
+    request_header = request_header.decode()
+
     request_line = request_header.split('\r\n')[0]
-    
+    # print(request_line)
     request_line_pattern = "^\S* \/\S* \S*$"
 
     if re.search(request_line_pattern, request_line) != None:
         [request_method, request_uri, protocol] = request_line.split(' ')
 
-    rawheaders = request_header.split('\n')[1:]
+    rawheaders = request_header.split('\r\n')[1:]
     header_pattern = "^\S*:*"
-
+    # print("rawheaders: ", rawheaders)
     for header in rawheaders:
         if len(header) <= 1:
             continue
         if re.search(header_pattern, header) == None:
             headers = None
-            return [request_method, request_uri, protocol, headers, request_body]
+            break
         
         headers[header.split(':', 1)[0].lower()] = header.split(':', 1)[1].strip()
 
-    return [request_method, request_uri, protocol, headers, request_body]
+    request = {"method" : request_method, "uri": request_uri, "protocol" : protocol, "headers" : headers, "body": request_body}
+    return request
 
 
 # request = "GET /index.html HTTP/1.1\r\nHost:127.0.0.1\r\n\r\nname:sagar\r\nlname:raskar"

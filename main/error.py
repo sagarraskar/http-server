@@ -6,7 +6,7 @@ def getErrorPage(status_code, status_phrase, message):
     <title>{{status_code}} {{status_phrase}}</title>
 </head>
 <body>
-    <h1>{{status_phrase}}
+    <h1>{{status_phrase}}</h1>
     <p1>{{message}}</p>
 </body>
 </html>""")

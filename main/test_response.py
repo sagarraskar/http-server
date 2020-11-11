@@ -16,10 +16,11 @@ def test(expected, actual):
         print("Actual length of returned array : ", len(actual))
         
 def main():
-    test1 = ["get", "/", "HTTP/1.1", {"host:127.0.0.1", "connection:close"}, None]
+    request1 = ["get", "/", "HTTP/1.1", {"host:127.0.0.1", "connection:close"}, None]
 
 
-    expected = """501
+    expected = """HTTP/1.1 501 Method Not Implemented
+    """
     
     print("-----------Running Test 1 --------------")
     print("For request: ", request1)

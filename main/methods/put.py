@@ -4,7 +4,8 @@ import mimetypes
 import os
 from email.utils import formatdate
 from error import * 
-from constants import *
+from config import *
+from utils.errorlog import logerror
 
 def put(addr, req, response):
     # response = {"headers": {}, "status_code": None, "status_phrase": None, "body": None}
@@ -18,7 +19,7 @@ def put(addr, req, response):
     directory_path = path.split('/')[:-1]
     directory_path = "/".join(directory_path)
 
-    if directory_path == (DOCUMENT_ROOT + "/put"):
+    if directory_path == (DOCUMENT_ROOT + PUT_DIRECTORY):
         if os.path.isfile(path):
             fp = open(path, 'rb')
             data = fp.read()
@@ -42,7 +43,7 @@ def put(addr, req, response):
                         condition = False
                         response["status_code"] = "412"
                         response["status_phrase"] = "Precondition Failed"
-                        data = None
+                        logerror(addr, req, response)
 
             elif 'if-unmodified-since' in list(req["headers"].keys()):
                 date = req["headers"]["if-modified-since"]
@@ -55,7 +56,7 @@ def put(addr, req, response):
                     condition = False
                     response["status_code"] = "412"
                     response["status_phrase"] = "Precondition Failed"
-                    data = None
+                    logerror(addr, req, response)
 
             if (condition == None or condition == True) and "if-none-match" in list(req["headers"].keys()):
                 
@@ -64,7 +65,7 @@ def put(addr, req, response):
                     condition = False
                     response["status_code"] = "304"
                     response["status_phrase"] = "Not Modified"
-                    data=None
+                    
                 
                 else:
                     for i in e_tags:
@@ -72,12 +73,12 @@ def put(addr, req, response):
                             condition = False
                             response["status_code"] = "304"
                             response["status_phrase"] = "Not Modified"
-                            data=None
+                            
                             break
                     else:
                         condition = True
 
-            if condition == True:
+            if condition == None or condition == True:
                 response["status_code"] = "204"
                 response["status_phrase"] = "No Content"
                 open(path, "w").close()
@@ -87,9 +88,11 @@ def put(addr, req, response):
                 last_modified = time.gmtime(os.path.getmtime(path))
                 e_tag = '"' + hex(int(time.mktime(last_modified)))[2:] + "-" + hex(os.path.getsize(path))[2:] + '"'
 
+                last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified)
                 response["headers"]["Content-Location"] = "/put/" + filename
                 response["headers"]["Last-Modified"] = last_modified
                 response["headers"]["E-tag"] = e_tag
+
 
         else:
             response["status_code"] = "201"
@@ -100,7 +103,8 @@ def put(addr, req, response):
             fp.close()
             last_modified = time.gmtime(os.path.getmtime(path))
             e_tag = '"' + hex(int(time.mktime(last_modified)))[2:] + "-" + hex(os.path.getsize(path))[2:] + '"'
-            
+
+            last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified) 
             response["headers"]["Content-Location"] = "/put/" + filename
             response["headers"]["Last-Modified"] = last_modified
             response["headers"]["E-tag"] = e_tag

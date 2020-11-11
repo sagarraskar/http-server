@@ -3,7 +3,8 @@ import time
 import mimetypes
 import os
 from error import * 
-from constants import *
+from config import *
+from utils.errorlog import logerror
 
 def delete(addr, req, response):
     if req["uri"] == "/":
@@ -23,7 +24,10 @@ def delete(addr, req, response):
         content_type = "text/html"
         response["headers"]["Content-Length"] = content_length
         response["headers"]["Content-Type"] = content_type
-    
+        response["headers"]["body"] = data
+
+        logerror(addr, req, response)
+
     else:
         fp = open(path, 'rb')
         data = fp.read()
@@ -48,6 +52,7 @@ def delete(addr, req, response):
                     response["status_code"] = "412"
                     response["status_phrase"] = "Precondition Failed"
                     data = None
+                    logerror(addr, req, response)
 
         elif 'if-unmodified-since' in list(req["headers"].keys()):
             date = req["headers"]["if-modified-since"]
@@ -61,6 +66,7 @@ def delete(addr, req, response):
                 response["status_code"] = "412"
                 response["status_phrase"] = "Precondition Failed"
                 data = None
+                logerror(addr, req, response)
 
         if (condition == None or condition == True) and "if-none-match" in list(req["headers"].keys()):
             
@@ -70,7 +76,7 @@ def delete(addr, req, response):
                 response["status_code"] = "412"
                 response["status_phrase"] = "Precondition Failed"
                 data = None
-            
+                logerror(addr, req, response)
             else:
                 for i in e_tags:
                     if i == e_tag:
@@ -78,6 +84,7 @@ def delete(addr, req, response):
                         response["status_code"] = "402"
                         response["status_phrase"] = "Precondition Failed"
                         data = None
+                        logerror(addr, req, response)
                         break
                 else:
                     condition = True

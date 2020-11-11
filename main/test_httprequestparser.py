@@ -20,7 +20,7 @@ def main():
 host: 127.0.0.1\r
 connection: close\r
 """
-
+    request1 = request1.encode()
     expected = ["GET", "/", "HTTP/1.1", {"host":"127.0.0.1", "connection":"close"}, None]
     actual = parseRequest(request1)
     
@@ -34,7 +34,8 @@ host: 127.0.0.1\r
 connection: close\r
 \r
 Hello World"""
-    expected = ["GET", "/", "HTTP/1.1", {"host":"127.0.0.1", "connection":"close"}, "Hello World"]
+    request2 = request2.encode()
+    expected = ["GET", "/", "HTTP/1.1", {"host":"127.0.0.1", "connection":"close"}, b"Hello World"]
     actual = parseRequest(request2)
     
     print("-----------Running Test 2 --------------")

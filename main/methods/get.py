@@ -3,7 +3,8 @@ import time
 import mimetypes
 import os
 from error import * 
-from constants import *
+from config import *
+from utils.errorlog import logerror
 
 def get(addr, req, response):
     # response = {"headers": {}, "status_code": None, "status_phrase": None, "body": None}
@@ -26,7 +27,7 @@ def get(addr, req, response):
         response["headers"]["Content-Length"] = content_length
         response["headers"]["Content-Type"] = content_type
         response["body"] = data
-    
+        logerror(addr, req, response)
     else:
         response["status_code"] = "200"
         response["status_phrase"] = "OK"
@@ -54,7 +55,8 @@ def get(addr, req, response):
                     condition = False
                     response["status_code"] = "412"
                     response["status_phrase"] = "Precondition Failed"
-                    data = None
+                    # data = None
+                    logerror(addr, req, response)
 
         elif 'if-unmodified-since' in list(req["headers"].keys()):
             date = req["headers"]["if-modified-since"]
@@ -67,42 +69,43 @@ def get(addr, req, response):
                 condition = False
                 response["status_code"] = "412"
                 response["status_phrase"] = "Precondition Failed"
-                data = None
+                # data = None
+                logerror(addr, req, response)
 
-        if (condition == None or condition == True) and "if-none-match" in list(req["headers"].keys()):
+        if (condition == None or condition == True): 
+            if "if-none-match" in list(req["headers"].keys()):
             
-            e_tags = req["headers"]['if-none-match'].split(",")
-            if e_tags[0] == '"*"':
-                condition = False
-                response["status_code"] = "304"
-                response["status_phrase"] = "Not Modified"
-                data=None
-            
-            else:
-                for i in e_tags:
-                    if i == e_tag:
-                        condition = False
-                        response["status_code"] = "304"
-                        response["status_phrase"] = "Not Modified"
-                        data=b''
-                        break
+                e_tags = req["headers"]['if-none-match'].split(",")
+                if e_tags[0] == '"*"':
+                    condition = False
+                    response["status_code"] = "304"
+                    response["status_phrase"] = "Not Modified"
+                    # data=None
+                
+                else:
+                    for i in e_tags:
+                        if i == e_tag:
+                            condition = False
+                            response["status_code"] = "304"
+                            response["status_phrase"] = "Not Modified"
+                            # data=b''
+                            break
+                    else:
+                        condition = True
+
+            elif 'if-modified-since' in list(req["headers"].keys()):
+                date = req["headers"]["if-modified-since"]
+                date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
+                date = time.mktime(date.timetuple())
+
+                if date >= time.mktime(last_modified):
+                    condition = False
+                    response["status_code"]="304"
+                    response["status_phrase"]="Not Modified"
+                    # data=b''
                 else:
                     condition = True
-
-        elif 'if-modified-since' in list(req["headers"].keys()):
-            date = req["headers"]["if-modified-since"]
-            date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
-            date = time.mktime(date.timetuple())
-
-            if date >= time.mktime(last_modified):
-                condition = False
-                print("304 Not modified")
-                response["status_code"]="304"
-                response["status_phrase"]="Not Modified"
-                data=b''
-            else:
-                condition = True
-        
+            
 
         if condition == True and 'range' in list(req["headers"].keys()) and req["headers"]['range'].split('=')[0] == 'bytes':
             date = None
@@ -155,13 +158,14 @@ def get(addr, req, response):
                     response["status_phrase"] = "Partial Content"
                     if len(final_ranges) == 1:
                         data = data[final_ranges[0][0]: (final_ranges[0][1] + 1)]
-                        
-        last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified)
-        response["headers"]["Last-Modified"] = last_modified
-        response["headers"]["Content-Length"] = content_length
-        response["headers"]["Content-Type"] = content_type 
-        response["headers"]["E-tag"] = e_tag
-        response["body"] = data
+        
+        if condition == None or condition == True:  
+            last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified)
+            response["headers"]["Last-Modified"] = last_modified
+            response["headers"]["Content-Length"] = content_length
+            response["headers"]["Content-Type"] = content_type 
+            response["headers"]["E-tag"] = e_tag
+            response["body"] = data
     
     return response
 
