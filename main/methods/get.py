@@ -63,7 +63,7 @@ def get(addr, req, response):
             date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
             date = time.mktime(date.timetuple())
 
-            if date > time.mktime(last_modified):
+            if date >= time.mktime(last_modified):
                 condition = True
             else:
                 condition = False
@@ -107,14 +107,26 @@ def get(addr, req, response):
                     condition = True
             
 
-        if condition == True and 'range' in list(req["headers"].keys()) and req["headers"]['range'].split('=')[0] == 'bytes':
-            date = None
-            if 'if-range' in list(req["headers"].keys()) and req["headers"]["if-range"][0] != '"':
-                date = req["headers"]["if-range"]
-                date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
-                date = time.mktime(date.timetuple())
+        if (condition == None or condition == True) and 'range' in list(req["headers"].keys()) and req["headers"]['range'].split('=')[0] == 'bytes':
+            range_condition = None
+            if 'if-range' in list(req["headers"].keys()): 
+                if req["headers"]["if-range"][0] != '"':
+                    date = req["headers"]["if-range"]
+                    date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S GMT")
+                    date = time.mktime(date.timetuple())
+   
+                    if date >= time.mktime(last_modified):
+                        range_condition = True
+                    else:
+                        range_condition = False
+                else:
+                    request_e_tag = req["headers"]["if-range"]
+                    if e_tag == request_e_tag:
+                        range_condition = True
+                    else:
+                        range_condition = False
 
-            if date == None or (date != None and date > time.mktime(last_modified)):
+            if range_condition == None or range_condition == True:
                 raw_ranges = req["headers"]['range'].split('=')[1].split(',')
                 final_ranges = []
                 if len(raw_ranges) == 1:
@@ -135,24 +147,7 @@ def get(addr, req, response):
                         req["headers"]["content-range"] = "bytes " + str(final_ranges[0][0]) + "-" + str(final_ranges[0][1]) + "/" + str(content_length)
                         content_length = final_ranges[0][1] - final_ranges[0][0] + 1
 
-                # elif len(raw_ranges) > 1 and len(raw_ranges) < 10 :
-                #     for range in raw_ranges:
-                #         fpos = None # first-byte-pos
-                #         lpos = None # last-byte-post
-                #         if range[0] == "-":
-                #             fpos = len(data)-int(range[1:])+1
-                #             lpos = int(range[1:])
-                            
-                #         elif range[-1] == "-":
-                #             fpos = int(range[:-1])
-                #             lpos = len(data)
-                #         else:
-                #             [fpos, lpos] = [int(x) for x in range.split("-")]
-                            
-                #         if lpos >= fpos:
-                #             final_ranges.append((fpos, lpos))
-                    
-
+     
                 if len(final_ranges) > 0:
                     response["status_code"] = "206"
                     response["status_phrase"] = "Partial Content"
@@ -165,6 +160,7 @@ def get(addr, req, response):
             response["headers"]["Content-Length"] = content_length
             response["headers"]["Content-Type"] = content_type 
             response["headers"]["E-tag"] = e_tag
+            response["headers"]["Accept-Ranges"] = "bytes"
             response["body"] = data
     
     return response

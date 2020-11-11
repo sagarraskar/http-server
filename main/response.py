@@ -30,6 +30,7 @@ def generateResponse(addr, req):
         if None in [req["method"], req["headers"]]:
             print("None in headers")
         else:
+            print(req["protocol"])
             print("protocol does not match")
         response["status_code"] = "400"
         response["status_phrase"]= "Bad Request"

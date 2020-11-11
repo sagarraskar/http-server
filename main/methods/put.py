@@ -119,5 +119,5 @@ def put(addr, req, response):
         response["headers"]["Content-Type"] = content_type
         response["headers"]["Allow"] = "GET, HEAD, POST"
         response["body"] = data
-
+        logerror(addr, req, response)
     return response
