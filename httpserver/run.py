@@ -9,7 +9,7 @@ import configparser
 def createdefaultconfig():
     config = configparser.ConfigParser()
     config["SERVER"] = {
-        "SERVER_PORT" : 8092, 
+        "SERVER_PORT" : 8080, 
         "DOCUMENT_ROOT" : "/var/www/html2", 
         "POST_DIRECTORY": "/post",
         "PUT_DIRECTORY" : "/put"
@@ -21,7 +21,7 @@ def createdefaultconfig():
         "POST_LOG_FILE": "post.log"
     }
     config["CONNECTION"] = {
-        "MAX_CONNECTIONS" : 5
+        "MAX_CONNECTIONS" : 50
     }
     with open("/etc/httpserver/server.conf", "w") as file:
         config.write(file)
@@ -37,18 +37,18 @@ def start():
     if not os.path.exists("/etc/httpserver"):
         print("Configuring server")
         Path("/etc/httpserver").mkdir(parents=True, exist_ok=True)
-
+        createdefaultconfig()
     if not os.path.exists(DOCUMENT_ROOT):
         Path(DOCUMENT_ROOT).mkdir(parents=True, exist_ok=True)
 
     if not os.path.exists(LOG_DIRECTORY):
         Path(LOG_DIRECTORY).mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(POST_DIRECTORY):
-        Path(POST_DIRECTORY).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(DOCUMENT_ROOT + POST_DIRECTORY):
+        Path(DOCUMENT_ROOT + POST_DIRECTORY).mkdir(parents=True, exist_ok=True)
     
-    if not os.path.exists(PUT_DIRECTORY):
-        Path(PUT_DIRECTORY).mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(DOCUMENT_ROOT + PUT_DIRECTORY):
+        Path(DOCUMENT_ROOT + PUT_DIRECTORY).mkdir(parents=True, exist_ok=True)
 
 
     try:

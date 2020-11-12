@@ -27,11 +27,11 @@ def generateResponse(addr, req):
     response["headers"]["Connection"] = "close"
 
     if None in [req["method"], req["headers"]] or (req["protocol"] != "HTTP/1.1" and req["protocol"] != "HTTP/1.0"):
-        if None in [req["method"], req["headers"]]:
-            print("None in headers")
-        else:
-            print(req["protocol"])
-            print("protocol does not match")
+        # if None in [req["method"], req["headers"]]:
+        #     print("None in headers")
+        # else:
+        #     print(req["protocol"])
+        #     print("protocol does not match")
         response["status_code"] = "400"
         response["status_phrase"]= "Bad Request"
 
@@ -43,8 +43,8 @@ def generateResponse(addr, req):
         logerror(addr, req, response)
 
     elif ("host" not in list(req["headers"].keys())) or req["headers"]["host"] not in [x+":"+str(SERVER_PORT) for x in ["localhost", "127.0.0.1"]]:
-        print("host not in headers")
-        print(req["headers"]['host'])
+        # print("host not in headers")
+        # print(req["headers"]['host'])
         response["status_code"] = "400"
         response["status_phrase"] = "Bad Request"
 

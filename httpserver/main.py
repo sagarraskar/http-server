@@ -5,7 +5,9 @@ from _thread import *
 from response import generateResponse
 from httprequestparser import parseRequest
 from config import *
-from utils.accesslog import accesslog
+from utils.accesslog import logaccess
+import error
+from utils.errorlog import logerror
 
 def threaded(c, addr):
     # print("Accepting requests from ", addr)
@@ -17,25 +19,35 @@ def threaded(c, addr):
             request += partial_request
             if len(partial_request) < 1024:
                 break
-        
-        # print(request[:300])
-        request = parseRequest(request)
 
-        # for header in headers:
-        #     print(header)
-        # connection = True
+        try:
+            request = parseRequest(request)
+        except:
+            data = error.getErrorPage("400", "Bad Request", "Server Could not understand the request").encode()
+            content_length = len(data)
+            content_type = "text/html"
+            
+            res = {"headers": {}, "status_code" : "400", "status_phrase": "Bad Request", "body": None, "protocol": "HTTP/1.1"}
+            res["headers"]["Content-Length"] = content_length
+            res["headers"]["Content-Type"] = content_type
+            res["body"] = data
+            logerror(addr, request, res)            
+  
+        try:
+            res = generateResponse(addr, request)
+        except:
+            data = error.getErrorPage("500", "Internal Server Error", "").encode()
+            content_length = len(data)
+            content_type = "text/html"
+            
+            res = {"headers": {}, "status_code" : "500", "status_phrase": "Internal Server Error", "body": None, "protocol": "HTTP/1.1"}
+            res["headers"]["Content-Length"] = content_length
+            res["headers"]["Content-Type"] = content_type
+            res["body"] = data
+            logerror(addr, request, res)
 
-        # if "connection" in list(request["headers"].keys()):
-        #     if request["headers"]["connection"] == "close":
-        #         connection = False
-               
-        
-        res = generateResponse(addr, request)
-        
-        access_log = accesslog(addr, request, res)
-
-        with open(LOG_DIRECTORY + "/" + ACCESS_LOG_FILE, "a") as file:
-            file.write(access_log)
+            
+        logaccess(addr, request, res)
             
         response = "{} {} {}\r\n".format(res["protocol"], res["status_code"], res["status_phrase"])
         for name, value in res["headers"].items():
@@ -48,11 +60,6 @@ def threaded(c, addr):
             response += res["body"]
 
         c.send(response)
-
-
-        # if connection:
-        #     continue
-        
         c.close()
         return
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+import random
 import time
 import mimetypes
 import os
@@ -155,6 +156,8 @@ def get(addr, req, response):
                         data = data[final_ranges[0][0]: (final_ranges[0][1] + 1)]
         
         if condition == None or condition == True:  
+            if "cookie" not in req["headers"]:
+                response["headers"]["Set-Cookie"] = "sessionId={}".format(random.randint(100000, 1000000))
             last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", last_modified)
             response["headers"]["Last-Modified"] = last_modified
             response["headers"]["Content-Length"] = content_length
@@ -164,7 +167,3 @@ def get(addr, req, response):
             response["body"] = data
     
     return response
-
-# request = {'method': 'GET', 'uri': '/', 'protocol': 'HTTP/1.1', 'headers': {'host': '127.0.0.1:8091', 'if-modified-since': 'Sun, 28 Oct 2020 08:43:22 GMT', 'connection': 'close'}, 'body': None}
-# response = get(None, request)
-# print(response)

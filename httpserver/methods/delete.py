@@ -81,7 +81,7 @@ def delete(addr, req, response):
                 for i in e_tags:
                     if i == e_tag:
                         condition = False
-                        response["status_code"] = "402"
+                        response["status_code"] = "412"
                         response["status_phrase"] = "Precondition Failed"
                         data = None
                         logerror(addr, req, response)
@@ -90,9 +90,9 @@ def delete(addr, req, response):
                     condition = True
         
 
-        if condition == True:
+        if condition == None or condition == True:
             os.remove(path)
             response["status_code"] = "204"
             response["status_phrase"] = "No Content"
-    
+
     return response

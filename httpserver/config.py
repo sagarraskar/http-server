@@ -3,6 +3,17 @@ import configparser
 config = configparser.ConfigParser()
 config.read("/etc/httpserver/server.conf")
 
+# DOCUMENT_ROOT = "/var/www/html"
+# SERVER_PORT = 8092
+# POST_DIRECTORY =  "/post"
+# PUT_DIRECTORY = "/put"
+# LOG_DIRECTORY = "/var/log/httpserver"
+# ACCESS_LOG_FILE = "access.log"
+# ERROR_LOG_FILE = "error.log"
+# POST_LOG_FILE = "post.log"
+
+# MAX_CONNECTIONS = 5
+
 if "SERVER" in config.sections():
     DOCUMENT_ROOT = config["SERVER"]["DOCUMENT_ROOT"]
     SERVER_PORT = int(config["SERVER"]["SERVER_PORT"])

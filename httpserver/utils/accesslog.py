@@ -1,4 +1,6 @@
-def accesslog(addr, req, res):
+from config import *
+
+def logaccess(addr, req, res):
         if addr[0]:
             client_ip = addr[0]
         else:
@@ -21,4 +23,6 @@ def accesslog(addr, req, res):
 
         req_line = "{} {} {}".format(req["method"], req["uri"], req["protocol"])
         access_log = '{} [{}] "{}" {} {}\n'.format(client_ip, date, req_line, res["status_code"], content_length)
-        return access_log
+    
+        with open(LOG_DIRECTORY + "/" + ACCESS_LOG_FILE, "a") as file:
+            file.write(access_log)
