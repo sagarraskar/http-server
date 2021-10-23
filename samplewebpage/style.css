@@ -1,0 +1,35 @@
+*{
+    margin : 0px;
+    padding : 0px;
+    box-sizing: border-box;
+}
+
+body{
+    display : grid;
+    height: 100vh;
+    grid-template-rows: 200px 400px;
+  
+ 
+    
+}
+h1{
+    text-align: center;
+    margin-top: 20px;
+}
+
+input{
+    display: block;
+    margin : 50px auto;
+    padding : 20px;
+    height : 40px;
+    width : 300px;
+}
+.container button{
+    margin : 50px auto;
+    display: block;
+    width : 100px;
+}
+.output{
+    margin: 50px auto;
+    text-align: center;
+}
